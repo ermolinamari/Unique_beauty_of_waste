@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Остатки в раковине</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --panel: #efefed;
+    --text: #1c1b19;
+    --muted: #76736d;
+    --line: #e4e3df;
+    --accent: #a3622b;
+    --gap: 6px;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 0 24px; }
+
+  header.top { padding: 72px 0 40px; }
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(34px, 6vw, 68px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    margin: 0 0 20px;
+  }
+  .lead { max-width: 560px; margin: 0 0 14px; color: var(--text); }
+  .meta { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+
+  nav.years {
+    position: sticky; top: 0; z-index: 5;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  nav.years .wrap {
+    display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none;
+    padding-top: 8px; padding-bottom: 8px;
+  }
+  nav.years .wrap::-webkit-scrollbar { display: none; }
+  nav.years a {
+    flex: none;
+    color: var(--muted); text-decoration: none;
+    font-size: 14px; font-variant-numeric: tabular-nums;
+    padding: 6px 12px; border-radius: 999px;
+  }
+  nav.years a:hover { color: var(--text); }
+  nav.years a.on { color: var(--bg); background: var(--text); }
+
+  section.year {
+    display: grid;
+    grid-template-columns: 170px 1fr;
+    gap: 24px;
+    padding: 48px 0;
+    border-bottom: 1px solid var(--line);
+    scroll-margin-top: 52px;
+  }
+  .label { position: sticky; top: 76px; align-self: start; }
+  .label .num {
+    font-family: var(--serif);
+    font-size: 64px; line-height: 1;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .label .num.small { font-size: 40px; }
+  .label .count { color: var(--muted); font-size: 14px; margin-top: 10px; }
+  .label .note { color: var(--accent); font-size: 13px; margin-top: 4px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: var(--gap);
+  }
+  .tile {
+    display: block; padding: 0; border: 0; margin: 0;
+    background: var(--panel);
+    aspect-ratio: 3 / 4;
+    overflow: hidden; cursor: zoom-in;
+  }
+  .tile img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+    transition: transform .35s ease, opacity .35s ease;
+  }
+  .tile:hover img { transform: scale(1.03); }
+  .tile:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  footer { padding: 40px 0 72px; color: var(--muted); font-size: 14px; }
+
+  /* просмотр одного снимка */
+  .viewer {
+    position: fixed; inset: 0; z-index: 20;
+    background: var(--bg);
+    display: none;
+    grid-template-rows: 1fr auto;
+  }
+  .viewer.open { display: grid; }
+  .viewer .stage {
+    min-height: 0; display: flex; align-items: center; justify-content: center;
+    padding: 24px 72px 8px;
+  }
+  .viewer img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .viewer .cap {
+    text-align: center; padding: 12px 16px 22px;
+    font-variant-numeric: tabular-nums;
+  }
+  .viewer .cap b { font-family: var(--serif); font-weight: 400; font-size: 22px; }
+  .viewer .cap span { color: var(--muted); font-size: 14px; margin-left: 12px; }
+  .viewer button {
+    position: absolute; background: none; border: 0; color: var(--text);
+    font-size: 30px; line-height: 1; width: 56px; height: 56px;
+    cursor: pointer; opacity: .7;
+  }
+  .viewer button:hover { opacity: 1; }
+  .viewer .x { top: 8px; right: 8px; }
+  .viewer .prev { left: 8px; top: 50%; transform: translateY(-50%); }
+  .viewer .next { right: 8px; top: 50%; transform: translateY(-50%); }
+
+  @media (max-width: 760px) {
+    .wrap { padding: 0 16px; }
+    header.top { padding: 44px 0 28px; }
+    section.year { grid-template-columns: 1fr; gap: 16px; padding: 32px 0; }
+    .label { position: static; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+    .label .num { font-size: 44px; }
+    .label .num.small { font-size: 30px; }
+    .label .count, .label .note { margin-top: 0; }
+    .grid { grid-template-columns: repeat(2, 1fr); }
+    .viewer .stage { padding: 56px 8px 8px; }
+    .viewer .prev, .viewer .next { top: auto; bottom: 6px; transform: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .tile img { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <h1>Остатки в&nbsp;раковине</h1>
+    <p class="lead">Я всю жизнь фотографирую то, что остаётся в&nbsp;раковине после мытья посуды.</p>
+    <div class="meta" id="meta"></div>
+  </div>
+</header>
+
+<nav class="years" aria-label="Годы"><div class="wrap" id="nav"></div></nav>
+
+<main class="wrap" id="main"></main>
+
+<footer><div class="wrap" id="foot"></div></footer>
+
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Просмотр снимка">
+  <div class="stage"><img id="vimg" alt=""></div>
+  <div class="cap"><b id="vyear"></b><span id="vdate"></span></div>
+  <button class="x" id="vx" aria-label="Закрыть">×</button>
+  <button class="prev" id="vprev" aria-label="Предыдущий">‹</button>
+  <button class="next" id="vnext" aria-label="Следующий">›</button>
+</div>
+
+<script src="data.js"></script>
+<script>
+(function () {
+  var photos = window.PHOTOS || [];
+  var UNKNOWN = "до 2020";            // подпись группы без точного года
+  var UNKNOWN_NOTE = "год уточняется";
+  var MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+
+  function niceDate(d) {
+    if (!d) return "";
+    var p = d.split("-");
+    return parseInt(p[2], 10) + " " + MONTHS[parseInt(p[1], 10) - 1] + " " + p[0];
+  }
+
+  // группы по годам, в порядке данных (без года — первыми)
+  var groups = [], byKey = {};
+  photos.forEach(function (p, i) {
+    p.i = i;
+    var k = p.year || "";
+    if (!byKey[k]) { byKey[k] = { key: k, items: [] }; groups.push(byKey[k]); }
+    byKey[k].items.push(p);
+  });
+
+  var years = groups.filter(function (g) { return g.key; }).map(function (g) { return g.key; });
+  document.getElementById("meta").textContent =
+    photos.length + " фото · " + (years.length ? years[0] + "–" + years[years.length - 1] : "");
+
+  var nav = document.getElementById("nav"), main = document.getElementById("main");
+  groups.forEach(function (g) {
+    var id = "y" + (g.key || "x"), title = g.key || UNKNOWN;
+
+    var a = document.createElement("a");
+    a.href = "#" + id; a.textContent = title; a.dataset.id = id;
+    nav.appendChild(a);
+
+    var s = document.createElement("section");
+    s.className = "year"; s.id = id;
+    var label = document.createElement("div");
+    label.className = "label";
+    label.innerHTML = '<div class="num' + (g.key ? "" : " small") + '">' + title + "</div>" +
+      '<div class="count">' + g.items.length + " фото</div>" +
+      (g.key ? "" : '<div class="note">' + UNKNOWN_NOTE + "</div>");
+    var grid = document.createElement("div");
+    grid.className = "grid";
+    g.items.forEach(function (p) {
+      var b = document.createElement("button");
+      b.className = "tile"; b.type = "button";
+      b.setAttribute("aria-label", "Снимок, " + (p.year || UNKNOWN) + (p.date ? ", " + niceDate(p.date) : ""));
+      var img = document.createElement("img");
+      img.loading = "lazy"; img.decoding = "async"; img.alt = "";
+      img.src = "img/thumb/" + p.id + ".jpg";
+      b.appendChild(img);
+      b.addEventListener("click", function () { open(p.i, b); });
+      grid.appendChild(b);
+    });
+    s.appendChild(label); s.appendChild(grid);
+    main.appendChild(s);
+  });
+
+  document.getElementById("foot").textContent = "Снимки сделаны на телефон. Серия продолжается.";
+
+  // ссылка вида #y2019 должна открываться сразу на нужном годе
+  if (location.hash) {
+    var target = document.getElementById(location.hash.slice(1));
+    if (target) target.scrollIntoView();
+  }
+
+  // подсветка текущего года в навигации
+  var links = [].slice.call(nav.querySelectorAll("a"));
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        if (!e.isIntersecting) return;
+        links.forEach(function (l) {
+          var on = l.dataset.id === e.target.id;
+          l.classList.toggle("on", on);
+          if (on) nav.scrollLeft = l.offsetLeft - nav.clientWidth / 2 + l.clientWidth / 2;
+        });
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    [].forEach.call(document.querySelectorAll("section.year"), function (s) { io.observe(s); });
+  }
+
+  // просмотр
+  var viewer = document.getElementById("viewer"), vimg = document.getElementById("vimg");
+  var vyear = document.getElementById("vyear"), vdate = document.getElementById("vdate");
+  var cur = -1, opener = null;
+
+  function show(i) {
+    cur = (i + photos.length) % photos.length;
+    var p = photos[cur];
+    vimg.src = "img/full/" + p.id + ".jpg";
+    vyear.textContent = p.year || UNKNOWN;
+    vdate.textContent = p.date ? niceDate(p.date) : (p.year ? "" : UNKNOWN_NOTE);
+    var n = photos[(cur + 1) % photos.length];
+    new Image().src = "img/full/" + n.id + ".jpg";
+  }
+  function open(i, from) {
+    opener = from; viewer.classList.add("open");
+    document.body.style.overflow = "hidden";
+    show(i); document.getElementById("vx").focus();
+  }
+  function close() {
+    viewer.classList.remove("open"); document.body.style.overflow = "";
+    vimg.removeAttribute("src");
+    if (opener) opener.focus();
+  }
+  document.getElementById("vx").addEventListener("click", close);
+  document.getElementById("vprev").addEventListener("click", function () { show(cur - 1); });
+  document.getElementById("vnext").addEventListener("click", function () { show(cur + 1); });
+  viewer.addEventListener("click", function (e) {
+    if (e.target === viewer || e.target.classList.contains("stage")) close();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (!viewer.classList.contains("open")) return;
+    if (e.key === "Escape") close();
+    else if (e.key === "ArrowLeft") show(cur - 1);
+    else if (e.key === "ArrowRight") show(cur + 1);
+  });
+  var tx = null;
+  viewer.addEventListener("touchstart", function (e) { tx = e.touches[0].clientX; }, { passive: true });
+  viewer.addEventListener("touchend", function (e) {
+    if (tx === null) return;
+    var dx = e.changedTouches[0].clientX - tx; tx = null;
+    if (Math.abs(dx) > 50) show(cur + (dx < 0 ? 1 : -1));
+  });
+})();
+</script>
+</body>
+</html>
