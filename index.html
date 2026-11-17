@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Остатки в раковине</title>
+<title>Unique Beauty of Waste</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -150,33 +150,33 @@
 
 <header class="top">
   <div class="wrap">
-    <h1>Остатки в&nbsp;раковине</h1>
-    <p class="lead">Я всю жизнь фотографирую то, что остаётся в&nbsp;раковине после мытья посуды.</p>
+    <h1>Unique Beauty of&nbsp;Waste</h1>
+    <p class="lead">All my life I have been photographing what is left in&nbsp;the&nbsp;sink after washing the&nbsp;dishes.</p>
     <div class="meta" id="meta"></div>
   </div>
 </header>
 
-<nav class="years" aria-label="Годы"><div class="wrap" id="nav"></div></nav>
+<nav class="years" aria-label="Years"><div class="wrap" id="nav"></div></nav>
 
 <main class="wrap" id="main"></main>
 
 <footer><div class="wrap" id="foot"></div></footer>
 
-<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Просмотр снимка">
+<div class="viewer" id="viewer" role="dialog" aria-modal="true" aria-label="Photo viewer">
   <div class="stage"><img id="vimg" alt=""></div>
   <div class="cap"><b id="vyear"></b><span id="vdate"></span></div>
-  <button class="x" id="vx" aria-label="Закрыть">×</button>
-  <button class="prev" id="vprev" aria-label="Предыдущий">‹</button>
-  <button class="next" id="vnext" aria-label="Следующий">›</button>
+  <button class="x" id="vx" aria-label="Close">×</button>
+  <button class="prev" id="vprev" aria-label="Previous">‹</button>
+  <button class="next" id="vnext" aria-label="Next">›</button>
 </div>
 
 <script src="data.js"></script>
 <script>
 (function () {
   var photos = window.PHOTOS || [];
-  var UNKNOWN = "до 2020";            // подпись группы без точного года
-  var UNKNOWN_NOTE = "год уточняется";
-  var MONTHS = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+  var UNKNOWN = "before 2020";        // подпись группы без точного года
+  var UNKNOWN_NOTE = "year to be confirmed";
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
   function niceDate(d) {
     if (!d) return "";
@@ -195,7 +195,7 @@
 
   var years = groups.filter(function (g) { return g.key; }).map(function (g) { return g.key; });
   document.getElementById("meta").textContent =
-    photos.length + " фото · " + (years.length ? years[0] + "–" + years[years.length - 1] : "");
+    photos.length + " photos · " + (years.length ? years[0] + "–" + years[years.length - 1] : "");
 
   var nav = document.getElementById("nav"), main = document.getElementById("main");
   groups.forEach(function (g) {
@@ -210,14 +210,14 @@
     var label = document.createElement("div");
     label.className = "label";
     label.innerHTML = '<div class="num' + (g.key ? "" : " small") + '">' + title + "</div>" +
-      '<div class="count">' + g.items.length + " фото</div>" +
+      '<div class="count">' + g.items.length + (g.items.length === 1 ? " photo" : " photos") + "</div>" +
       (g.key ? "" : '<div class="note">' + UNKNOWN_NOTE + "</div>");
     var grid = document.createElement("div");
     grid.className = "grid";
     g.items.forEach(function (p) {
       var b = document.createElement("button");
       b.className = "tile"; b.type = "button";
-      b.setAttribute("aria-label", "Снимок, " + (p.year || UNKNOWN) + (p.date ? ", " + niceDate(p.date) : ""));
+      b.setAttribute("aria-label", "Photo, " + (p.year || UNKNOWN) + (p.date ? ", " + niceDate(p.date) : ""));
       var img = document.createElement("img");
       img.loading = "lazy"; img.decoding = "async"; img.alt = "";
       img.src = "img/thumb/" + p.id + ".jpg";
@@ -229,7 +229,7 @@
     main.appendChild(s);
   });
 
-  document.getElementById("foot").textContent = "Снимки сделаны на телефон. Серия продолжается.";
+  document.getElementById("foot").textContent = "Shot on a phone. The series is ongoing.";
 
   // ссылка вида #y2019 должна открываться сразу на нужном годе
   if (location.hash) {
